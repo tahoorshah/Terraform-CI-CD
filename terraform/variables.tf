@@ -13,5 +13,5 @@ variable "project_name" {
 variable "file_count" {
   description = "Number of files to create"
   type        = number
-  default     = 3
+  default     = 5
 }
