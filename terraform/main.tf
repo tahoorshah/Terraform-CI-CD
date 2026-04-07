@@ -31,3 +31,25 @@ resource "local_file" "summary" {
     random_suffix = random_string.suffix.result
   })
 }
+
+# Create a configuration file
+resource "local_file" "config" {
+  filename = "${path.module}/generated/config-${var.environment}.yaml"
+  content = yamlencode({
+    application = {
+      name        = var.project_name
+      environment = var.environment
+      version     = "1.0.0"
+    }
+    infrastructure = {
+      file_count    = var.file_count
+      random_suffix = random_string.suffix.result
+      created_at    = timestamp()
+    }
+    metadata = {
+      terraform_version = "1.6.6"
+      managed_by       = "terraform"
+      ci_cd_pipeline   = "github-actions"
+    }
+  })
+}

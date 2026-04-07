@@ -1,0 +1,42 @@
+{
+  "environment": {
+    "sensitive": false,
+    "type": "string",
+    "value": "dev"
+  },
+  "files_created": {
+    "sensitive": false,
+    "type": [
+      "tuple",
+      [
+        "string",
+        "string",
+        "string",
+        "string",
+        "string"
+      ]
+    ],
+    "value": [
+      "./generated/demo-dev-1-wkv00qqh.txt",
+      "./generated/demo-dev-2-wkv00qqh.txt",
+      "./generated/demo-dev-3-wkv00qqh.txt",
+      "./generated/demo-dev-4-wkv00qqh.txt",
+      "./generated/demo-dev-5-wkv00qqh.txt"
+    ]
+  },
+  "random_suffix": {
+    "sensitive": false,
+    "type": "string",
+    "value": "wkv00qqh"
+  },
+  "summary_file": {
+    "sensitive": false,
+    "type": "string",
+    "value": "./generated/summary-dev-wkv00qqh.json"
+  },
+  "total_resources": {
+    "sensitive": false,
+    "type": "number",
+    "value": 6
+  }
+}
