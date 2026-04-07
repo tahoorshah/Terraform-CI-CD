@@ -1,0 +1,74 @@
+name: 'Drift Detection'
+
+on:
+  schedule:
+    - cron: '0 9 * * MON'  # Run every Monday at 9 AM
+  workflow_dispatch:
+
+env:
+  TF_VERSION: '1.6.6'
+  TF_WORKING_DIR: './terraform'
+
+jobs:
+  drift-detection:
+    name: 'Detect Configuration Drift'
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+    
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v4
+    
+    - name: 'Setup Terraform'
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+    
+    - name: 'Terraform Init'
+      run: terraform init
+    
+    - name: 'Terraform Plan'
+      id: plan
+      run: |
+        terraform plan -detailed-exitcode -no-color -out=drift_plan || exit_code=$?
+        echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+        if [ $exit_code -eq 2 ]; then
+          echo "drift_detected=true" >> $GITHUB_OUTPUT
+          terraform show -no-color drift_plan > drift_details.txt
+        else
+          echo "drift_detected=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: 'Create Issue for Drift'
+      if: steps.plan.outputs.drift_detected == 'true'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const driftDetails = fs.readFileSync('terraform/drift_details.txt', 'utf8');
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'Configuration Drift Detected',
+            body: `Configuration drift has been detected in the Terraform state.
+            
+            **Detection Time:** ${new Date().toISOString()}
+            **Branch:** ${context.ref}
+            **Commit:** ${context.sha}
+            
+            <details><summary>Drift Details</summary>
+            
+            \`\`\`terraform
+            ${driftDetails}
+            \`\`\`
+            
+            </details>
+            
+            Please review and apply the necessary changes to resolve the drift.`,
+            labels: ['infrastructure', 'drift-detection', 'urgent']
+          });

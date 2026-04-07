@@ -1,0 +1,47 @@
+name: 'Deploy to Staging'
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'terraform/**'
+
+env:
+  TF_VERSION: '1.6.6'
+  TF_WORKING_DIR: './terraform'
+  TF_VAR_environment: 'staging'
+
+jobs:
+  deploy-staging:
+    name: 'Deploy to Staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+    
+    steps:
+    - name: 'Checkout'
+      uses: actions/checkout@v4
+    
+    - name: 'Setup Terraform'
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+    
+    - name: 'Terraform Init'
+      run: terraform init
+    
+    - name: 'Terraform Plan'
+      run: terraform plan -var="environment=staging" -out=tfplan
+    
+    - name: 'Terraform Apply'
+      run: terraform apply -auto-approve tfplan
+    
+    - name: 'Upload Staging Artifacts'
+      uses: actions/upload-artifact@v4
+      with:
+        name: staging-generated-files
+        path: ${{ env.TF_WORKING_DIR }}/generated/
