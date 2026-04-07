@@ -17,3 +17,8 @@ output "random_suffix" {
   description = "Random suffix used"
   value       = random_string.suffix.result
 }
+
+output "total_resources" {
+  description = "Total number of resources created"
+  value       = length(local_file.demo_files) + 1
+}
