@@ -22,3 +22,8 @@ output "total_resources" {
   description = "Total number of resources created"
   value       = length(local_file.demo_files) + 1
 }
+
+output "config_file" {
+  description = "Configuration file location"
+  value       = local_file.config.filename
+}
